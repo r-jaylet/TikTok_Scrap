@@ -1,13 +1,15 @@
 from TikTokApi import TikTokApi
 import pandas as pd
 from timeit import default_timer as timer
+import csv
+import sys
 
 verifyFp = 'verify_kvfvyfh1_273CrYie_8lVQ_4p5v_BN6J_S3zGN19jmYWI'
 
 api = TikTokApi.get_instance(custom_verifyFp=verifyFp, use_test_endponts = True)
 
-def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashtag_filter = True,
-           n_iter = 100, n_user = 10, n_vid = 20, max_followers = 1000000,
+def tiktok(only_unverified = False, only_duo = False, hashtag_filter = True,
+           n_user = 20, n_vid = 20, max_followers = 100000,
            seed = ['kissamile']):
     '''
     Creates a dataframe of musicians' profile on TikTok.
@@ -16,7 +18,6 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
                     only_duo (bool): if 'True', only select 'duet/duo' interactions between musicians
                     bio_filter (bool): if 'True', only select musicians with selected key words in bio
                     hashtag_filter (bool): if 'True', only select musicians with selected key hashtags in videos' description
-                    n_iter (int): maximum number of iterations on users
                     n_users (int): number of artists wanted in the database
                     n_vid (int): number of TikToks scrapped in each profile
                     max_followers (int): maximum number of followers
@@ -24,8 +25,6 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
             Returns:
                     user_df (dataframe): dataframe of users with its different characteristics
                         user_name (str): unique username of profile
-                        user_id (int):  uniquer id of profile
-                        sec_id (str): sec id of profile
                         signature (str): bio description of profile
                         nickname (str): nickname of user
                         verified (bool): is the user verified or not
@@ -37,59 +36,47 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
                         hashtags (list of str): list of unique hashtags used by user
     '''
 
-    # initialize dataframe
-    user_df = pd.DataFrame(columns = ['user_name', 'user_id', 'signature', 'nickname', 'verified',
-                                    'follower_count', 'following_count', 'likes_count',
-                                    'video_count', 'collabs', 'hashtags'])
-
     # initialize control variables
     i_iter = 0
     i_user = 0
     users = seed
 
     #create list of key words if key words filter activated
-    '''
-    search_for_hashtags doesn't seem to work anymore
 
-    if bio_filter or hashtag_filter:
-
-        key_hashtags = key_words
-        for k in key_words:
-            for c in api.search_for_hashtags(k, count=5, custom_verifyFp=verifyFp):
-                key_hashtags.append(c['challenge']['title'])
-        print('key words :', key_hashtags)
-    '''
     key_hashtag = ['music', 'musician', 'instrumentalist', 'vocalist', 'singer', 'band', 'newmusic'
                    'guitar', 'bass', 'piano', 'saxophone', 'guitartok',
-                   'jazz', 'funk', 'rock', 'pop', 'rap', 'funk', 'rnb', 'neosoul', 'blues', 'hiphop'
-                   'sing', 'song', 'chanson', 'songwriter', 'singingchallenge',
-                   'rythm', 'harmony', 'musicduet']
+                   'jazz', 'funk', 'rock', 'pop', 'rap', 'funk', 'rnb', 'hiphop'
+                   'sing', 'song', 'songwriter', 'singingchallenge',
+                   'rythm', 'harmony', 'cover']
+
+    name_file = seed[0] + '_music.csv'
+    fichier = open(name_file,'w', encoding="utf-8")
+    obj = csv.writer(fichier)
+
+    col_df = ['user_name', 'nickname', 'signature', 'verified', 'follower_count', 'following_count',
+    'likes_count', 'video_count', 'collabs', 'hashtags']
+    obj.writerow(col_df)
 
     for user in users:
 
         start = timer()
         i_iter+=1
-        print('i_iter', i_iter, ':', user)
+        print('\n i_iter', i_iter, ':', user)
 
-        try :
+        try:
             profile = api.get_user(user, custom_verifyFp=verifyFp)  # get user profile
 
             if profile:  # check empty profil
 
-                res = {}
+                res = {'user_name' : '', 'nickname' :'', 'signature' : '', 'verified' :'',
+                       'follower_count' : 0, 'following_count' :'', 'likes_count': 0, 'video_count' : 0,
+                       'collabs' :'', 'hashtags' :''}
+
                 prof = profile['userInfo']['user']
                 stat = profile['userInfo']['stats']
                 tiktoks = profile['items']
 
                 # check filters
-                if bio_filter:
-                    bio = prof['signature'].split()
-                    if any([any(m in w for w in key_hashtag) for m in bio]):
-                        res['signature'] = prof['signature']
-                    else:
-                        continue
-                else:
-                    res['signature'] = prof['signature']
                 if only_unverified:
                     if prof['verified']:
                         continue
@@ -103,9 +90,8 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
                     res['follower_count'] = stat['followerCount']
 
                 # get profile info
+                res['signature'] = prof['signature']
                 res['user_name'] = prof['uniqueId']
-                res['user_id'] = prof['id']
-                res['sec_id'] = prof['secUid']
                 res['nickname'] = prof['nickname']
 
                 # get stats
@@ -146,7 +132,7 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
 
                 # musician filter
                 if hashtag_filter:
-                    if any([any(m in w for w in key_hashtag) for m in hashtag]):  # a modifier
+                    if any([any(m in w for w in key_hashtag) for m in hashtag]):
                         res['hashtags'] = hashtag
                         res['collabs'] = collab
                     else:
@@ -155,33 +141,43 @@ def tiktok(only_unverified = False, only_duo = False, bio_filter = False, hashta
                     res['hashtags'] = hashtag
                     res['collabs'] = collab
 
-                user_df = user_df.append(res, ignore_index=True)  # update dataframe
+                obj.writerow(tuple(res.values()))
+
                 i_user+=1
-                print('length data_base :', i_user)
-                print('collab list of', user, 'is :', collab)
+                print('taille base de données :', i_user)
+                print('liste de collaborateurs de', user, ':', collab)
 
                 end = timer()
-                print('time :', end - start, '\n')
+                print('temps éxécution :', round(end - start,3))
 
             for cand in collab:
                 if cand not in users:
                     users.append(cand)
 
-            # stop reccursion
-            if i_iter >= n_iter:
-                print('max threshold iteration')
-                return user_df
-            elif i_user >= n_user:
-                print('max threshold users')
-                return user_df
+            if i_user >= n_user:
+                print("Nombre d'utilisateurs voulu atteint")
+                fichier.close()
+                return
 
         except:
-            print('error with user :', user)
+            print("\n Erreur avec l'utilisateur :", user)
 
-    return user_df
+    fichier.close()
+    print("Plus d'utilisateurs sur lesquel itéré")
+    return
 
 if __name__ == '__main__':
-    df = tiktok(only_unverified = False, only_duo = True, bio_filter = False, hashtag_filter = True,
-            n_iter = 100, n_user = 10, n_vid = 20, max_followers = 1000000,
-            seed = ['kissamile'])
-    df.to_csv('test_df.csv', index=False)
+
+    depart = int(input("Nombre d'utilisateurs avec lequel initier l'algortihme :"))
+
+    print('Nom(s) de(s) utilisateurs(s) voulu pour initier :')
+    ini_list = []
+    for i in range(depart):
+        us = input()
+        ini_list.append(us)
+
+    arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme :"))
+
+    tiktok(n_user = arret, n_vid = 6, seed = ini_list)
+
+
