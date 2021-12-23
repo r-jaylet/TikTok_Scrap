@@ -43,10 +43,10 @@ def tiktok(only_unverified = False, only_duo = False, hashtag_filter = True,
 
     #create list of key words if key words filter activated
 
-    key_hashtag = ['music', 'musician', 'instrumentalist', 'vocalist', 'singer', 'band', 'newmusic'
-                   'guitar', 'bass', 'piano', 'saxophone', 'guitartok',
-                   'jazz', 'funk', 'rock', 'pop', 'rap', 'funk', 'rnb', 'hiphop'
-                   'sing', 'song', 'songwriter', 'singingchallenge',
+    key_hashtag = ['music', 'musician', 'instrumentalist', 'vocalist', 'singer', 'band', 'newmusic', 'musiciansoftiktok',
+                   'guitar', 'bass', 'piano', 'guitartok', 'acoustic', 'drums',
+                   'jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
+                   'sing', 'song', 'singing', 'songwriter', 'acapella',
                    'rythm', 'harmony', 'cover']
 
     name_file = seed[0] + '_music.csv'
@@ -110,7 +110,7 @@ def tiktok(only_unverified = False, only_duo = False, hashtag_filter = True,
                         if 'textExtra' in tiktok:  # get special text
                             if only_duo:
                                 hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
-                                if ('duo' in hashtag_cand) or ('duet' in hashtag_cand) or ('duetwithme' in hashtag_cand):
+                                if ('duo' in hashtag_cand) or ('duet' in hashtag_cand) or ('duetwithme' in hashtag_cand) or ('duetthis' in hashtag_cand) or ('duets' in hashtag_cand):
                                     collab_cand = list(filter(None, [text['userUniqueId'] for text in tiktok['textExtra']]))
                                     for collab_c in collab_cand:
                                         if collab_c not in collab :
@@ -163,14 +163,14 @@ def tiktok(only_unverified = False, only_duo = False, hashtag_filter = True,
             print("\n Erreur avec l'utilisateur :", user)
 
     fichier.close()
-    print("Plus d'utilisateurs sur lesquel itéré")
+    print("Plus d'utilisateurs sur lesquels itérer")
     return
 
 if __name__ == '__main__':
 
-    depart = int(input("Nombre d'utilisateurs avec lequel initier l'algortihme :"))
+    depart = int(input("Nombre d'utilisateurs avec lequel initialiser l'algortihme :"))
 
-    print('Nom(s) de(s) utilisateurs(s) voulu pour initier :')
+    print('Nom(s) de(s) utilisateurs(s) voulu(s) pour initialiser :')
     ini_list = []
     for i in range(depart):
         us = input()
@@ -178,6 +178,4 @@ if __name__ == '__main__':
 
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme :"))
 
-    tiktok(n_user = arret, n_vid = 6, seed = ini_list)
-
-
+    tiktok(n_user = arret, seed = ini_list)
