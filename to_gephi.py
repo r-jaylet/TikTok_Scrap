@@ -26,7 +26,6 @@ def gephi(file_name):
             'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
     instrument =['guitar', 'bass', 'piano', 'drums',
                 'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
-    vocalist = ['sing', 'singer', 'singingchallenge']
 
     res_style = np.zeros(21)
     res_instru = np.zeros(21)
@@ -73,11 +72,11 @@ def gephi(file_name):
     nodes = nodes.rename(columns={'index': 'Id'})
     nodes = nodes.rename(columns={'user_name': 'Label'})
 
-    edges = pd.DataFrame(columns = ['Source', 'Target', 'Type'])
+    edges = pd.DataFrame(columns = ['Source', 'Target', 'Type', 'Weight'])
     for i, collab in enumerate(convert_to_adjacency(data)):
         if collab != []:
             for c in collab:
-                series = pd.Series([i, c, 'undirected'], index = edges.columns)
+                series = pd.Series([i, c, 'undirected', '1.0'], index = edges.columns)
                 edges = edges.append(series, ignore_index=True)
 
     return nodes, edges
@@ -93,5 +92,3 @@ if __name__ == '__main__':
 
     output[0].to_csv(file_name_nodes, index=False)
     output[1].to_csv(file_name_edges, index=False)
-
-

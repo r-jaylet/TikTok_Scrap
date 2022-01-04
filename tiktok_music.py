@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 import csv
 import sys
 
-verifyFp = 'verify_kvfvyfh1_273CrYie_8lVQ_4p5v_BN6J_S3zGN19jmYWI'
+verifyFp = 'verify_c947c7e5866e28821078c910e7422061'
 
 api = TikTokApi.get_instance(custom_verifyFp=verifyFp, use_test_endponts = True)
 
@@ -43,7 +43,8 @@ def tiktok(only_unverified = False, only_duo = False, hashtag_filter = True,
 
     #create list of key words if key words filter activated
 
-    key_hashtag = ['music', 'musician', 'instrumentalist', 'vocalist', 'singer', 'band', 'newmusic', 'musiciansoftiktok',
+    key_hashtag = ['music', 'musician', 'instrumentalist', 'vocalist',
+                   'singer', 'band', 'newmusic', 'musiciansoftiktok',
                    'guitar', 'bass', 'piano', 'guitartok', 'acoustic', 'drums',
                    'jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
                    'sing', 'song', 'singing', 'songwriter', 'acapella',
@@ -179,3 +180,6 @@ if __name__ == '__main__':
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme :"))
 
     tiktok(n_user = arret, seed = ini_list)
+#%%
+
+#%%
