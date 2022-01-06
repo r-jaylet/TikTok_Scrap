@@ -13,18 +13,17 @@ verifyFp = 'verify_507ceffa7f90b24ef070f8e8558da484'
 api = TikTokApi.get_instance(custom_verifyFp=verifyFp, use_test_endponts=True)
 
 # list of key words for filter
-key_hashtag = ['musician', 'instrumentalist', 'impro',
+key_hashtag = ['music', 'musician', 'instrumentalist', 'impro',
                'solo', 'band', 'newmusic', 'musiciansoftiktok',
                'songwriter', 'rythm', 'cover',
                'jazztok', 'producer', 'guitarsolo'
                'jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
                'groove', 'classical', 'neosoul', 'indiemusic', 'lofi',
                'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro',
-               'guitar', 'bass', 'piano', 'drums', 'synth', 'rhodes',
-               'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
+               'guitar', 'bass', 'piano', 'drums', 'synth', 'rhodes']
 
 def tiktok(only_unverified=False,
-           only_duo=True,
+           only_duo=False,
            hashtag_filter=True,
            list_hashtags=key_hashtag,
            n_user=20,
@@ -231,7 +230,6 @@ def tiktok(only_unverified=False,
                 print('liste des utilisateurs mentionnés de', user[0], ':')  # replace by user
                 for c in collab_url.keys():
                     print(c, ':', str('https://tiktok.com/@'+c))
-                print('\n')
 
             for cand in collab:
                 if cand not in users:
@@ -257,8 +255,8 @@ def tiktok(only_unverified=False,
                 print('Trop de requêtes...')
                 return
 
-    if i_user < 5:
-        print("Il y a un nombre très faible d'utilisateurs : modifiez les paramètres d'entrée")
+    #if i_user < 5:
+    #print("Il y a un nombre très faible d'utilisateurs : modifiez les paramètres d'entrée")
 
     file.close()
     print("Plus d'utilisateurs sur lesquels itérer")
@@ -267,7 +265,7 @@ def tiktok(only_unverified=False,
 
 if __name__ == '__main__':
 
-    #typewrite('1')
+    typewrite('1')
     depart = int(input("Nombre d'utilisateurs avec lequel initialiser :"))
 
     # print('Nom(s) de(s) utilisateurs(s) voulu(s) pour initialiser :')
@@ -277,10 +275,10 @@ if __name__ == '__main__':
         us = input()
         ini_list.append(us)
 
-    #typewrite('10')
+    typewrite('10')
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme: "))
 
-    '''
+    print('\n')
     print('Paramètres initiaux :')
     typewrite('30')
     n_vid = int(input("Nombre de TikToks max étudiés par profil (n_vid): "))
@@ -290,9 +288,8 @@ if __name__ == '__main__':
     list_hashtags = str(input("Liste des hashtags pour le filtre (list_hashtags): "))
     list_hashtags = list_hashtags.split(',')
     tiktok(n_user=arret, seed=ini_list, n_vid=n_vid, list_hashtags=list_hashtags)
-    '''
 
-    tiktok(n_user=arret, seed=ini_list)
+    #tiktok(n_user=arret, seed=ini_list)
 
     # pruning : keep only musicians
     username = ini_list[0].split('@')[1].split('/')[0]
