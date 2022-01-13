@@ -22,10 +22,10 @@ def gephi(file_name):
     data['poids'] = weight
 
     style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
-            'groove', 'classical', 'neosoul', 'indiemusic',
-            'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
-    instrument =['guitar', 'bass', 'piano', 'drums',
-                'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
+             'groove', 'classical', 'neosoul', 'indiemusic',
+             'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
+    instrument = ['guitar', 'bass', 'piano', 'drums',
+                  'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
 
     res_style = np.zeros(21)
     res_instru = np.zeros(21)
@@ -62,21 +62,38 @@ def gephi(file_name):
             tab_instrument.append(min(tab_i))
         else:
             tab_instrument.append(None)
-
+    '''
     data['instrument'] = tab_instrument
     data['instrument'] = data['instrument'].astype('Int64')
     data['style'] = tab_style
     data['style'] = data['style'].astype('Int64')
+    '''
+    tab_instrument_ = []
+    for i in range(len(tab_instrument)):
+        if tab_instrument[i] is not None:
+            tab_instrument_.append(instrument[tab_instrument[i]])
+        else:
+            tab_instrument_.append('None')
+    tab_style_ = []
+    for i in range(len(tab_style)):
+        if tab_style[i] is not None:
+            tab_style_.append(style[tab_style[i]])
+        else:
+            tab_style_.append('None')
+    data['instrument'] = tab_instrument_
+    data['style'] = tab_style_
+
+
 
     nodes = data[['index', 'user_name', 'poids', 'style', 'instrument']]
     nodes = nodes.rename(columns={'index': 'Id'})
     nodes = nodes.rename(columns={'user_name': 'Label'})
 
-    edges = pd.DataFrame(columns = ['Source', 'Target', 'Type', 'Weight'])
+    edges = pd.DataFrame(columns = ['Source', 'Target', 'Type'])
     for i, collab in enumerate(convert_to_adjacency(data)):
         if collab != []:
             for c in collab:
-                series = pd.Series([i, c, 'undirected', '1.0'], index = edges.columns)
+                series = pd.Series([i, c, 'undirected'], index = edges.columns)
                 edges = edges.append(series, ignore_index=True)
 
     return nodes, edges
