@@ -6,7 +6,6 @@ import time
 import sys
 import ast
 import pandas as pd
-#from pyautogui import typewrite
 
 verifyFp = 'verify_507ceffa7f90b24ef070f8e8558da484'
 
@@ -264,7 +263,6 @@ if __name__ == '__main__':
     # choose inputs
     print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut")
     depart = int(input("Nombre d'utilisateurs avec lequel initialiser (start = 1): ") or 1)
-    #typewrite('1')
 
     print("Liens URL de(s) TikTok(s) des utilisateurs(s) voulu(s) pour initialiser l'algorithme: ")
     ini_list = []
@@ -273,7 +271,6 @@ if __name__ == '__main__':
         ini_list.append(us)
 
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme (n_user = 10): ") or 10)
-    #typewrite('10')
 
     # show default parameters
     print('\n')
@@ -293,9 +290,6 @@ if __name__ == '__main__':
         max_followers = int(input("Nombre de followers max par profil (max_followers): ") or 100000)
         only_u = bool(input("Conservé uniquement les profils vérifiés ? (only_unverified=False): ") or False )
         only_d = bool(input("Conservé uniquement les relations via duo ? (only_duo=False): ") or False )
-        #list_hashtags = str(input("Liste des hashtags pour le filtre (list_hashtags): ",  key_hashtag))
-        #typewrite(str(key_hashtag).replace("'", "")[1:-1])
-        #list_hashtags = list_hashtags.split(',')
         tiktok(n_user=arret, seed=ini_list, n_vid=n_vid,
                only_unverified=only_u, only_duo=only_d)
     else:
