@@ -3,7 +3,6 @@ from timeit import default_timer as timer
 import csv
 from datetime import datetime
 import time
-import sys
 import ast
 import pandas as pd
 
