@@ -89,7 +89,7 @@ def tiktok(only_unverified=True,
 
             if profile:  # check empty profile
 
-                res = dict.fromkeys(col_df)
+                res = dict.fromkeys(col_db)
 
                 prof = profile[0]['author']
                 stat = profile[0]['authorStats']
@@ -269,7 +269,7 @@ if __name__ == '__main__':
     data['collabs'] = data['collabs'].apply('\n'.join)
     stats = []
     hashs = []
-    for i in range (len(data)):
+    for i in range(len(data)):
         stat_to_str = ''
         hash_to_str = ''
         stat = ast.literal_eval(data.basic_stats[i])

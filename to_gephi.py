@@ -5,7 +5,7 @@ import pandas as pd
 def convert_to_adjacency(data):
     adj_list = []
     for i in range(len(data)):
-        user_collabs = data.music_collabs[i].split("\n")
+        user_collabs = str(data.music_collabs[i]).split("\n")
         user_collabs.pop()
         username_collabs = [u.split(" ")[0] for u in user_collabs]
         cand_list = [int(data[data['user_name'] == u].index.values) for u in username_collabs]
@@ -27,7 +27,7 @@ def gephi(file):
     res_instru = np.zeros(21)
 
     for i in range(len(data)):
-        hashtags_cat = data.hashtags[i].split("\n")
+        hashtags_cat = str(data.hashtags[i]).split("\n")
         hashtags_cat.pop()
         hashtags_cat_words = [cat.split(':')[1] for cat in hashtags_cat]
         instr = hashtags_cat_words[0].split(',')
