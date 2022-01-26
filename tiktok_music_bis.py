@@ -26,6 +26,7 @@ style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie'
 instrument = ['guitar', 'bass', 'piano', 'drums',
               'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
 
+
 def tiktok(only_unverified=True,
            only_duo=False,
            hashtag_filter=True,
@@ -144,30 +145,57 @@ def tiktok(only_unverified=True,
                     for tik_num, tiktok in enumerate(tiktoks):
                         tiktok_id = tiktok['id']
                         if 'textExtra' in tiktok:  # get special text
-                            hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
-                            collab_cand = []
-                            for text in tiktok['textExtra']:
-                                if text['userUniqueId'] != '':
-                                    collab_cand.append([text['userUniqueId'], text['userId'], text['secUid']])
+                            if only_duo:
+                                hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
+                                if not (any([any(m in w for w in hashtag_cand) for m in duo_list])):
+                                    continue
+                                else:
+                                    collab_cand = []
+                                    for text in tiktok['textExtra']:
+                                        if text['userUniqueId'] != '':
+                                            collab_cand.append([text['userUniqueId'], text['userId'], text['secUid']])
 
-                            for collab_c in collab_cand:
-                                if collab_c not in collab:
-                                    collab.append(collab_c)  # add collaborative artist
-                                    collab_url[collab_c[0]] = str(
-                                        'https://tiktok.com/@' + user[0] + '/video/' + tiktok_id)
-                                    if any([any(m in w for w in hashtag_cand) for m in duo_list]):
-                                        duos.append(collab_c)
-                                        collab_url[collab_c[0]] += ' (duo, vidéo num: '+ str(tik_num) + ')'
-                                    else:
-                                        mentions.append(collab_c)
-                                        collab_url[collab_c[0]] += ' (mention, vidéo num: ' + str(tik_num) + ')'
+                                    for collab_c in collab_cand:
+                                        if collab_c not in collab:
+                                            collab.append(collab_c)  # add collaborative artist
+                                            collab_url[collab_c[0]] = str(
+                                                'https://tiktok.com/@' + user[0] + '/video/' + tiktok_id)
+                                            if any([any(m in w for w in hashtag_cand) for m in duo_list]):
+                                                duos.append(collab_c)
+                                                collab_url[collab_c[0]] += ' (duo, vidéo num: '+ str(tik_num) + ')'
+                                            else:
+                                                mentions.append(collab_c)
+                                                collab_url[collab_c[0]] += ' (mention, vidéo num: ' + str(tik_num) + ')'
 
-                            all_hashtags += hashtag_cand
+                                    all_hashtags += hashtag_cand
 
-                            for hashtag_c in hashtag_cand:
-                                if hashtag_c not in hashtag:
-                                    hashtag.append(hashtag_c)  # add hashtag used
+                                    for hashtag_c in hashtag_cand:
+                                        if hashtag_c not in hashtag:
+                                            hashtag.append(hashtag_c)  # add hashtag used
+                            else:
+                                hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
+                                collab_cand = []
+                                for text in tiktok['textExtra']:
+                                    if text['userUniqueId'] != '':
+                                        collab_cand.append([text['userUniqueId'], text['userId'], text['secUid']])
 
+                                for collab_c in collab_cand:
+                                    if collab_c not in collab:
+                                        collab.append(collab_c)  # add collaborative artist
+                                        collab_url[collab_c[0]] = str(
+                                            'https://tiktok.com/@' + user[0] + '/video/' + tiktok_id)
+                                        if any([any(m in w for w in hashtag_cand) for m in duo_list]):
+                                            duos.append(collab_c)
+                                            collab_url[collab_c[0]] += ' (duo, vidéo num: ' + str(tik_num) + ')'
+                                        else:
+                                            mentions.append(collab_c)
+                                            collab_url[collab_c[0]] += ' (mention, vidéo num: ' + str(tik_num) + ')'
+
+                                all_hashtags += hashtag_cand
+
+                                for hashtag_c in hashtag_cand:
+                                    if hashtag_c not in hashtag:
+                                        hashtag.append(hashtag_c)  # add hashtag used
 
                 inst_count = dict.fromkeys(instrument, 0)
                 styl_count = dict.fromkeys(style, 0)
