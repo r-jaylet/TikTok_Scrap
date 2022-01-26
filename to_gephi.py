@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -17,62 +16,50 @@ def gephi(file):
     data = pd.read_csv(file)
     data.reset_index(level=0, inplace=True)
 
-    style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
-             'groove', 'classical', 'neosoul', 'indiemusic',
-             'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
-    instrument = ['guitar', 'bass', 'piano', 'drums',
-                  'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
-
-    res_style = np.zeros(21)
-    res_instru = np.zeros(21)
-
-    for i in range(len(data)):
-        hashtags_cat = str(data.hashtags[i]).split("\n")
-        hashtags_cat.pop()
-        hashtags_cat_words = [cat.split(':')[1] for cat in hashtags_cat]
-        instr = hashtags_cat_words[0].split(',')
-        sty = hashtags_cat_words[1].split(',')
-        l_style = np.array([int(any(m in w for w in sty)) for m in style])
-        l_instru = np.array([int(any(m in w for w in instr)) for m in instrument])
-        res_style = [int(x + y) for x, y in zip(res_style, l_style)]
-        res_instru = [int(x + y) for x, y in zip(res_instru, l_instru)]
-
     tab_style = []
     tab_instrument = []
 
     for i in range(len(data)):
-        style_bool = np.array([any(m in w for w in sty) for m in style])
-        tab_s = [i for i, x in enumerate(style_bool) if x]
-        if tab_s != []:
-            tab_style.append(min(tab_s))
+        hashtags_cat = str(data.hashtags[i]).split('\n')
+        hashtags_cat.pop()
+        hashtags_cat_words = [cat.split(': ')[1] for cat in hashtags_cat]
+        instr_all = hashtags_cat_words[0].split(', ')
+        if instr_all != ['']:
+            instr = [i.split(' (')[0] for i in instr_all]
+            instr_count = [int(i.split(' (')[1].replace(')', '')) for i in instr_all]
         else:
-            tab_style.append(None)
-        instrument_bool = np.array([any(m in w for w in instr) for m in instrument])
-        tab_i = [i for i, x in enumerate(instrument_bool) if x]
-        if tab_i != []:
-            tab_instrument.append(min(tab_i))
+            instr = ['None']
+            instr_count = [0]
+        sty_all = hashtags_cat_words[1].split(', ')
+        if sty_all != ['']:
+            sty = [s.split(' (')[0] for s in sty_all]
+            sty_count = [int(s.split(' (')[1].replace(')', '')) for s in sty_all]
         else:
-            tab_instrument.append(None)
+            sty = ['None']
+            sty_count = [0]
 
-    tab_instrument_ = []
-    for i in range(len(tab_instrument)):
-        if tab_instrument[i] is not None:
-            tab_instrument_.append(instrument[tab_instrument[i]])
+        # get most used instrument and style
+        final_s = sty[sty_count.index(max(sty_count))]
+        if final_s:
+            tab_style.append(str(final_s))
         else:
-            tab_instrument_.append('None')
-    tab_style_ = []
-    for i in range(len(tab_style)):
-        if tab_style[i] is not None:
-            tab_style_.append(style[tab_style[i]])
+            tab_style.append('None')
+        final_i = instr[instr_count.index(max(instr_count))]
+        if final_i:
+            tab_instrument.append(str(final_i))
         else:
-            tab_style_.append('None')
-    data['instrument'] = tab_instrument_
-    data['style'] = tab_style_
+            tab_instrument.append('None')
 
+    # add new style and instrument columns
+    data['instrument'] = tab_instrument
+    data['style'] = tab_style
+
+    # create nodes dataframe
     nodes = data[['index', 'user_name', 'style', 'instrument']]
     nodes = nodes.rename(columns={'index': 'Id'})
     nodes = nodes.rename(columns={'user_name': 'Label'})
 
+    # create edges dataframe
     edges = pd.DataFrame(columns=['Source', 'Target', 'Type'])
     for i, collab in enumerate(convert_to_adjacency(data)):
         if collab != []:
@@ -85,7 +72,7 @@ def gephi(file):
 
 if __name__ == '__main__':
 
-    file_name = str(input("nom fichier:"))
+    file_name = str(input("nom fichier : "))
     output = gephi(file_name)
     file_name = file_name.split('.')[0] + '_gephi'
     file_name_nodes = file_name + '_nodes.csv'

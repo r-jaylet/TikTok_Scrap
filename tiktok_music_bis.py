@@ -19,6 +19,12 @@ key_hashtag = ['music', 'musician', 'instrumentalist', 'impro',
                'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro',
                'guitar', 'bass', 'piano', 'drums', 'synth', 'rhodes']
 
+style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
+         'groove', 'classical', 'neosoul', 'indiemusic',
+         'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
+
+instrument = ['guitar', 'bass', 'piano', 'drums',
+              'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
 
 def tiktok(only_unverified=True,
            only_duo=False,
@@ -133,6 +139,7 @@ def tiktok(only_unverified=True,
                 tiktoks = profile
                 mentions, duos, collab, hashtag = [], [], [], []
                 collab_url = {}
+                all_hashtags = []
                 if tiktoks:
                     for tik_num, tiktok in enumerate(tiktoks):
                         tiktok_id = tiktok['id']
@@ -155,9 +162,22 @@ def tiktok(only_unverified=True,
                                         mentions.append(collab_c)
                                         collab_url[collab_c[0]] += ' (mention, vidéo num: ' + str(tik_num) + ')'
 
+                            all_hashtags += hashtag_cand
+
                             for hashtag_c in hashtag_cand:
                                 if hashtag_c not in hashtag:
                                     hashtag.append(hashtag_c)  # add hashtag used
+
+
+                inst_count = dict.fromkeys(instrument, 0)
+                styl_count = dict.fromkeys(style, 0)
+                for hashtag_c in all_hashtags:
+
+                    if hashtag_c in instrument:
+                        inst_count[hashtag_c] +=1
+                    if hashtag_c in style:
+                        styl_count[hashtag_c] +=1
+
 
                 # musician filter
                 if hashtag_filter:
@@ -167,15 +187,18 @@ def tiktok(only_unverified=True,
 
                 # hashtags by category
                 inst, styl, hash = [], [], []
-                for s in style:
-                    if s in hashtag:
-                        styl.append(s)
                 for i in instrument:
-                    if i in hashtag:
-                        inst.append(i)
+                    if inst_count[i] != 0:
+                        inst_num = str(i) + ' (' + str(inst_count[i]) + ')'
+                        inst.append(inst_num)
+                for s in style:
+                    if styl_count[s] != 0:
+                        styl_num = str(s) + ' (' + str(styl_count[s]) + ')'
+                        styl.append(styl_num)
                 for h in hashtag[:20]:
                     if (h not in styl) and (h not in inst):
                         hash.append(h)
+
                 hashtag_cat = {}
                 hashtag_cat['instruments'] = inst
                 hashtag_cat['styles'] = styl
