@@ -271,7 +271,7 @@ def tiktok(only_unverified=True,
         print("Il y a un nombre très faible d'utilisateurs : modifiez les paramètres d'entrée")
 
     file.close()
-    print("Plus d'utilisateurs sur lesquels itérer")
+    print("il n'y a plus d'utilisateurs sur lesquels itérer")
     return
 
 
