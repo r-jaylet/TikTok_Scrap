@@ -2,11 +2,11 @@ import pandas as pd
 
 
 def filter_tiktok(file_name='',
-                  only_unverified=True,
+                  only_unverified=False,
                   only_duo=False,
                   only_mention=False,
                   hashtags='',
-                  max_followers=100000,):
+                  max_followers=100000):
     """
     Filter dataframe given by tiktok_music().py according to criterias.
             Parameters:
@@ -91,11 +91,25 @@ def filter_tiktok(file_name='',
 
     # select according to criterias
     if only_unverified:
-        data = data[data['only_unverified']]
+        data = data[data['verified'] == False]
     if only_duo:
         data.music_collabs_df = data.music_collabs_df.apply(lambda x: [a for a in x if '(duo,' in a])
+        music_col = []
+        for i in range(len(data)):
+            music_collabs_u = ''
+            for coll in data.music_collabs_df[i]:
+                music_collabs_u += str(coll) + '\n'
+            music_col.append(music_collabs_u)
+        data['music_collabs'] = music_col
     if only_mention:
         data.music_collabs_df = data.music_collabs_df.apply(lambda x: [a for a in x if '(mention,' in a])
+        music_col = []
+        for i in range(len(data)):
+            music_collabs_u = ''
+            for coll in data.music_collabs_df[i]:
+                music_collabs_u += str(coll) + '\n'
+            music_col.append(music_collabs_u)
+        data['music_collabs'] = music_col
     if max_followers != 10000:
         data = data[data['follower_count'] < max_followers]
     if hashtags != '':
@@ -104,17 +118,10 @@ def filter_tiktok(file_name='',
         mask = data.hash.apply(lambda x: any(item for item in selection if item in x))
         data = data[mask]
 
-    music_col = []
-    for i in range(len(data)):
-        music_collabs_u = ''
-        for coll in data.music_collabs_df[i]:
-            music_collabs_u += str(coll) + '\n'
-        music_col.append(music_collabs_u)
-    data['music_collabs'] = music_col
 
     data = data[['user_name', 'signature', 'verified', 'basic_stats', 'collabs', 'music_collabs', 'hashtags']]
 
-    name = str(input("Nommer le fichier " + "'" + file_name + "'" + "(ne pas ajouter .csv) : ") or file_name.split('.')[0]+'_filter')
+    name = str(input("Nommer le fichier modifié " + "'" + file_name + "'" + "(ne pas ajouter .csv) : ") or file_name.split('.')[0]+'_filter')
 
     new_file_name = name + '.csv'
     data.to_csv(new_file_name, index=False)
@@ -122,19 +129,21 @@ def filter_tiktok(file_name='',
 
 if __name__ == '__main__':
 
+    file_name = str(input("nom fichier : "))
+
     # choose inputs
     print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut (valeur indiquée entre parenthèses)")
     print('\n')
     print('Paramètres à filtrer :')
     max_f = int(input("Nombre de followers max par profil (max_followers = 100000): ") or 100000)
-    min_f = int(input("Nombre de followers max par profil (min_followers = 1): ") or 1)
-    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=True): ") or True)
+    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=False): ") or False)
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
-    o_m = bool(input("Conserver uniquement les relations via duo ? (only_mention=False): ") or False)
-    h = str(input("Conserver uniquement les utilisateurs ayant mentionnés les mots suivants (séparés les mots par un espace) ") or 'ze')
+    o_m = bool(input("Conserver uniquement les relations via mention ? (only_mention=False): ") or False)
+    h = str(input("Conserver uniquement les utilisateurs ayant mentionnés les mots suivants (séparés les mots par un espace) : ") or '')
 
     # call function with defined parameters
-    filter_tiktok(hashtags=h,
+    filter_tiktok(file_name=file_name,
+                  hashtags=h,
                   max_followers=max_f,
                   only_unverified=o_u,
                   only_duo=o_d,
