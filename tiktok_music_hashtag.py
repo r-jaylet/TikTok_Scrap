@@ -5,7 +5,7 @@ import pandas as pd
 
 verifyFp = ''
 
-api = TikTokApi.get_instance(custom_verifyFp=verifyFp, use_test_endponts=True)
+api = TikTokApi(custom_verifyFp=verifyFp)
 
 
 def tiktok(only_unverified=True,
@@ -30,28 +30,27 @@ def tiktok(only_unverified=True,
     iter = 0
 
     # users = seed
-    users = []
 
     # initialize dataframe
-    col_db = ['user_name', 'signature', 'verified', 'basic_stats', 'collabs']
+    col_db = ['user_name', 'signature', 'verified', 'basic_stats', 'links']
     user_df = pd.DataFrame(columns=col_db)
 
     start = timer()
-    tiktoks = api.by_hashtag(hashtag, count=n_tiktok)
+    tag = api.hashtag(name=hashtag)
+    tiktoks = [video.as_dict for video in tag.videos()]
     end = timer()
     print("Temps d'exécution de la recherche:", round(end - start, 1), 's')
 
     for tik_num, tiktok in enumerate(tiktoks):
 
         iter += 1
-
         #try:
+
         profile = tiktoks[tik_num]
 
         if profile:  # check empty profile
 
             res = dict.fromkeys(col_db)
-
             prof = profile['author']
             stat = profile['authorStats']
             time_stamp = int(profile['createTime'])
@@ -66,10 +65,16 @@ def tiktok(only_unverified=True,
                 res['verified'] = prof['verified']
 
             # get profile info
-            if prof['uniqueId'] not in user_df.username:
+
+            if prof['uniqueId'] in list(user_df.user_name):
+                update = user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] + '\n' + 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + profile['id']
+                user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] = update
                 continue
             else:
                 res['user_name'] = prof['uniqueId']
+
+            res['signature'] = prof['signature']
+            res['user_name'] = prof['uniqueId']
 
             # get stats
             basic_stats = {}
@@ -77,10 +82,14 @@ def tiktok(only_unverified=True,
                 continue
             else:
                 basic_stats['follower_count'] = stat['followerCount']
+
             basic_stats['following_count'] = stat['followingCount']
             basic_stats['likes_count'] = stat['heartCount']
             basic_stats['video_count'] = stat['videoCount']
-            basic_stats['date'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
+            basic_stats['last_active'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
+            res['basic_stats'] = basic_stats
+
+            res['links'] = 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + profile['id']
 
             # add profile in datebase
             user_df = user_df.append(res, ignore_index=True)  # update dataframe
@@ -113,12 +122,12 @@ if __name__ == '__main__':
     print('\n')
     print('Paramètres initiaux :')
     depart = str(input("Hashtags avec lequel initialiser ('synthsolo' par défaut): ") or 'synthsolo')
-    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=True): ") or True)
+    o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
     n_t = int(input("Nombre de videos à vouloir être traiter (n_tiktok = 1000): ") or 1000)
     m_f = int(input("Nombre de followers max par profil (max_followers = 10000): ") or 10000)
 
     # call function with defined parameters
     tiktok(only_unverified=o_u,
            n_tiktok=n_t,
-           max_followers=10000,
+           max_followers=m_f,
            hashtag=depart)
