@@ -1,10 +1,51 @@
+
 from TikTokApi import TikTokApi
 
-api = TikTokApi.get_instance()
+verify_fp = ""
+api = TikTokApi(custom_verify_fp=verify_fp)
 
-count = 30
 
-tiktoks = api.by_hashtag("funny", count=count)
+tag = api.hashtag(name="funny")
 
-for tiktok in tiktoks:
-    print(tiktok)
+
+print(tag.info())
+
+
+for video in tag.videos():
+
+    video_dict = video.as_dict
+
+    print(video_dict['id'])
+    print(video_dict['author'])
+
+###########################################################
+
+
+from TikTokApi import TikTokApi
+
+verify_fp = ""
+api = TikTokApi(custom_verify_fp=verify_fp)
+
+for video in api.trending.videos():
+    print(video.id)
+
+
+#########################################################
+
+
+from TikTokApi import TikTokApi
+
+verify_fp = ""
+api = TikTokApi(custom_verify_fp=verify_fp)
+
+user = api.user(username="therock")
+
+for video in user.videos():
+
+    video_dict = video.as_dict
+
+    print(video_dict['id'])
+    print(video_dict['stats']['followerCount'])
+
+
+

@@ -136,8 +136,10 @@ def tiktok(only_unverified=True,
                 date = [datetime.utcfromtimestamp(int(tiktoks[i]['createTime'])).strftime('%Y-%m-%d') for i in range(len(tiktoks))]
                 dates = [datetime.strptime(d, "%Y-%m-%d") for d in date]
                 delta = [abs((dates[i + 1] - dates[i]).days) for i in range(len(dates)-1)]
-                freq = sum(delta) / len(delta)
-                basic_stats['freq_post'] = str(int(freq)) + ' days'
+                freq = int(sum(delta) / len(delta))
+                if freq == 0:
+                    freq = 1
+                basic_stats['freq_post'] = str(freq) + ' days'
                 res['basic_stats'] = basic_stats
 
                 # get collab and hashtags
@@ -284,7 +286,7 @@ if __name__ == '__main__':
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme (n_user = 10): ") or 10)
     n_v = int(input("Nombre de TikToks max étudiés par profil (n_vid = 30): ") or 30)
     m_f = int(input("Nombre de followers max par profil (max_followers = 100000): ") or 100000)
-    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=True): ") or True)
+    o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
 
     # call function with defined parameters
