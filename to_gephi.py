@@ -2,6 +2,9 @@ import pandas as pd
 
 
 def convert_to_adjacency(data):
+    """
+    Creates list of adjacency for every profile in a given file
+    """
     adj_list = []
     for i in range(len(data)):
         user_collabs = str(data.music_collabs[i]).split("\n")
@@ -13,6 +16,9 @@ def convert_to_adjacency(data):
 
 
 def gephi(file):
+    """
+    Creates nodes and edges files with adjacency list for gephi
+    """
     data = pd.read_csv(file)
     data.reset_index(level=0, inplace=True)
 

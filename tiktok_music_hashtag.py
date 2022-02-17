@@ -13,7 +13,7 @@ def tiktok(only_unverified=True,
            max_followers=10000,
            hashtag_start=['synthsolo']):
     """
-    Creates a dataframe of musicians' profile on TikTok from a given challenge's page
+    Creates a dataframe of musicians' video on TikTok from a given challenge's page
             Parameters:
                 only_unverified (bool): if 'True', only select unverified profiles
                 n_tiktok (int): number tiktoks studied
@@ -21,8 +21,8 @@ def tiktok(only_unverified=True,
                 hashtag (str): hashtags or challenges to search for
             Returns:
                 user_db (csv): datebase of users with its different characteristics
-                    user_name (str): unique username of profile
-                    signature (str): bio description of profile
+                    user_name (str): unique username of video
+                    signature (str): bio description of video
                     verified (bool): is the user verified or not
                     basic_stats (str) : statistics (follower_count, following_count, likes_count, video_count, last_active, freq_post)
                     hashtags (str) : list of hashtags used in videos
@@ -50,73 +50,72 @@ def tiktok(only_unverified=True,
 
             iter += 1
 
-            #try:
-            profile = tiktoks[tik_num]
+            try:
+                video = tiktoks[tik_num]
 
-            if profile:  # check empty profile
+                if video:  # check empty video
 
-                res = dict.fromkeys(col_db)
-                prof = profile['author']
-                stat = profile['authorStats']
-                time_stamp = int(profile['createTime'])
+                    res = dict.fromkeys(col_db)
+                    prof = video['author']
+                    stat = video['authorStats']
+                    time_stamp = int(video['createTime'])
 
-                # check filters
-                if only_unverified:
-                    if prof['verified']:
-                        continue
+                    # check filters
+                    if only_unverified:
+                        if prof['verified']:
+                            continue
+                        else:
+                            res['verified'] = prof['verified']
                     else:
                         res['verified'] = prof['verified']
-                else:
-                    res['verified'] = prof['verified']
 
-                # get profile info
+                    # get video info
 
-                if prof['uniqueId'] in list(user_df.user_name):
-                    update = user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] + '\n' + 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + profile['id']
-                    user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] = update
-                    hash_list = user_df.loc[user_df.user_name == prof['uniqueId'], 'hashtags'].tolist()[0]
-                    if 'textExtra' in profile:
+                    if prof['uniqueId'] in list(user_df.user_name):
+                        update = user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] + '\n' + 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + video['id']
+                        user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] = update
+                        hash_list = user_df.loc[user_df.user_name == prof['uniqueId'], 'hashtags'].tolist()[0]
+                        if 'textExtra' in video:
+                            hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
+                            for hashtag_c in hashtag_cand:
+                                if hashtag_c not in hash_list:
+                                    hash_list.append(hashtag_c)  # add hashtag used
+                        res['hashtags'] = hash_list
+                        continue
+                    else:
+                        res['user_name'] = prof['uniqueId']
+
+                    res['signature'] = prof['signature']
+                    res['user_name'] = prof['uniqueId']
+
+                    # get stats
+                    basic_stats = {}
+                    if stat['followerCount'] > max_followers:
+                        continue
+                    else:
+                        basic_stats['follower_count'] = stat['followerCount']
+
+                    basic_stats['following_count'] = stat['followingCount']
+                    basic_stats['likes_count'] = stat['heartCount']
+                    basic_stats['video_count'] = stat['videoCount']
+                    basic_stats['last_active'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
+                    res['basic_stats'] = basic_stats
+
+                    res['links'] = 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + video['id']
+                    hash_list = hashtag.split()
+                    if 'textExtra' in video:
                         hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
                         for hashtag_c in hashtag_cand:
                             if hashtag_c not in hash_list:
                                 hash_list.append(hashtag_c)  # add hashtag used
                     res['hashtags'] = hash_list
-                    continue
-                else:
-                    res['user_name'] = prof['uniqueId']
 
-                res['signature'] = prof['signature']
-                res['user_name'] = prof['uniqueId']
+                    # add profile in database
+                    user_df = user_df.append(res, ignore_index=True)  # update dataframe
 
-                # get stats
-                basic_stats = {}
-                if stat['followerCount'] > max_followers:
-                    continue
-                else:
-                    basic_stats['follower_count'] = stat['followerCount']
-
-                basic_stats['following_count'] = stat['followingCount']
-                basic_stats['likes_count'] = stat['heartCount']
-                basic_stats['video_count'] = stat['videoCount']
-                basic_stats['last_active'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
-                res['basic_stats'] = basic_stats
-
-                res['links'] = 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + profile['id']
-                hash_list = hashtag.split()
-                if 'textExtra' in profile:
-                    hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
-                    for hashtag_c in hashtag_cand:
-                        if hashtag_c not in hash_list:
-                            hash_list.append(hashtag_c)  # add hashtag used
-                res['hashtags'] = hash_list
-                # add profile in database
-                user_df = user_df.append(res, ignore_index=True)  # update dataframe
-
-            """
             except:
                 print("\n")
                 print("Erreur avec l'utilisateur :", prof['uniqueId'])
-            """
 
     stats = []
     hashs = []

@@ -40,7 +40,7 @@ def tiktok(only_unverified=True,
             Parameters:
                 only_unverified (bool): if 'True', only select unverified profiles
                 only_duo (bool): if 'True', only select duet connections
-                hashtag_filter (bool): if 'True', only select musicians with selected key hashtags in videos' description
+                hashtag_filter (bool): if 'True', only select musicians with selected hashtags
                 list_hashtags (list of str) : list of hashtags to filter musicians
                 n_user (int): number of artists wanted in the database
                 n_vid (int): number of TikToks scrapped in each profile
@@ -51,10 +51,10 @@ def tiktok(only_unverified=True,
                     user_name (str): unique username of profile
                     signature (str): bio description of profile
                     verified (bool): is the user verified or not
-                    basic_stats (str) : statistics (follower_count, following_count, likes_count, video_count, last_active, freq_post)
+                    basic_stats (str) : statistics (follower, following, likes, video, last_active, freq_post)
                     collabs (str): list of username with whom the user has collaborated
-                    music_collabs (str): list of users and info with whom the user has collaborated and is considered a musicians
-                    hashtags (str): list of unique hashtags used by user seperated by general, style, instrument and other
+                    music_collabs (str): list of musicians with whom the user has collaborated
+                    hashtags (str): list of unique hashtags used by user seperated by general, style, instrument
     """
     # initialize control variables
     iter = 0
@@ -325,7 +325,7 @@ if __name__ == '__main__':
             stat_to_str += str(list(stat.keys())[j]) + ' : ' + str(list(stat.values())[j]) + '\n'
         stats.append(stat_to_str)
         for j in range(len(hash)):
-            hash_to_str += str(list(hash.keys())[j]) + ' : ' +  ', '.join(str(x) for x in list(hash.values())[j])  + '\n'
+            hash_to_str += str(list(hash.keys())[j]) + ' : ' + ', '.join(str(x) for x in list(hash.values())[j])  + '\n'
         hashs.append(hash_to_str)
     data['basic_stats'] = stats
     data['hashtags'] = hashs
