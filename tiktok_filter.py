@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def filter_tiktok(file_name='',
+def filter_tiktok(file_name,
                   only_unverified=False,
                   only_duo=False,
                   only_mention=False,
@@ -13,6 +13,7 @@ def filter_tiktok(file_name='',
                 file_name (str): file of database to filter
                 only_unverified (bool): if 'True', only select unverified profiles
                 only_duo (bool): if 'True', only select duet connections
+                only_mention (bool): if 'True', only select mention connections
                 max_followers (int): maximum number of followers
                 hashtags (str): list of hashtags to filter upon
             Returns:
@@ -110,8 +111,7 @@ def filter_tiktok(file_name='',
                 music_collabs_u += str(coll) + '\n'
             music_col.append(music_collabs_u)
         data['music_collabs'] = music_col
-    if max_followers != 10000:
-        data = data[data['follower_count'] < max_followers]
+    data = data[data['follower_count'] < max_followers]
     if hashtags != '':
         data['hash'] = data['instruments'] + data['styles'] + data['others']
         selection = hashtags.split(' ')
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     print('\n')
     print('Paramètres à filtrer :')
     max_f = int(input("Nombre de followers max par profil (max_followers = 100000): ") or 100000)
-    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=False): ") or False)
+    o_u = bool(input("Conserver uniquement les profils vérifiés ? (only_unverified=True): ") or True)
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
     o_m = bool(input("Conserver uniquement les relations via mention ? (only_mention=False): ") or False)
     h = str(input("Conserver uniquement les utilisateurs ayant mentionnés les mots suivants (séparés les mots par un espace) : ") or '')
