@@ -5,11 +5,11 @@ import pandas as pd
 
 verifyFp = ''
 
-api = TikTokApi(custom_verifyFp=verifyFp)
+api = TikTokApi(custom_verify_fp=verifyFp)
 
 
 def tiktok(only_unverified=True,
-           n_tiktok_max=2000,
+           n_tiktok_max=1000,
            max_followers=10000,
            hashtag_start='synthsolo'):
     """
@@ -39,8 +39,10 @@ def tiktok(only_unverified=True,
     start = timer()
     tag = api.hashtag(name=hashtag_start)
     tiktoks = [video.as_dict for video in tag.videos(count=n_tiktok_max)]
+
     end = timer()
     print("Temps d'exécution de la recherche pour", hashtag_start, ":", round(end - start, 1), 's')
+    print('Nombre de vidéos à traiter :', len(tiktoks))
 
     for tik_num, tiktok in enumerate(tiktoks):
 
@@ -141,7 +143,7 @@ if __name__ == '__main__':
     print('Paramètres initiaux :')
     depart = str(input("Hashtags avec lequel initialiser *séparer par des espaces* ('synthsolo' par défaut): ") or 'synthsolo')
     o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
-    n_t = int(input("Nombre de videos à vouloir être traiter (n_tiktok_max = 2000): ") or 2000)
+    n_t = int(input("Nombre de videos à vouloir être traiter (n_tiktok_max = 1000): ") or 1000)
     m_f = int(input("Nombre de followers max par profil (max_followers = 10000): ") or 10000)
 
     # call function with defined parameters
