@@ -8,29 +8,27 @@ verifyFp = ''
 api = TikTokApi(custom_verify_fp=verifyFp)
 
 
-def tiktok(only_unverified=True,
-           n_tiktok_max=1000,
-           max_followers=10000,
-           hashtag_start='synthsolo'):
+def tiktok_hashtag(only_unverified=True,
+                   n_tiktok_max=1000,
+                   max_followers=10000,
+                   hashtag_start='synthsolo'):
     """
     Creates a dataframe of musicians' video on TikTok from a given challenge's page
             Parameters:
                 only_unverified (bool): if 'True', only select unverified profiles
                 n_tiktok_max (int): number tiktoks studied
                 max_followers (int): maximum number of followers
-                hashtag (str): hashtags or challenges to search for
+                hashtag_start (str): hashtags or challenges to search for
             Returns:
                 user_db (csv): datebase of users with its different characteristics
                     user_name (str): unique username of video
                     signature (str): bio description of video
                     verified (bool): is the user verified or not
-                    basic_stats (str) : statistics (follower_count, following_count, likes_count, video_count, last_active, freq_post)
+                    basic_stats (str) : stats (follower_count, following_count, likes_count, video_count, last_active)
                     hashtags (str) : list of hashtags used in videos
     """
     # initialize control variables
     iter = 0
-
-    # users = seed
 
     # initialize dataframe
     col_db = ['user_name', 'signature', 'verified', 'basic_stats', 'links', 'hashtags']
@@ -68,9 +66,9 @@ def tiktok(only_unverified=True,
                     res['verified'] = prof['verified']
 
                 # get video info
-
                 if prof['uniqueId'] in list(user_df.user_name):
-                    update = user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] + '\n' + 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + video['id']
+                    update = user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] +\
+                             '\n' + 'https://tiktok.com/@' + prof['uniqueId'] + '/video/' + video['id']
                     user_df.loc[user_df.user_name == prof['uniqueId'], 'links'] = update
                     hash_list = user_df.loc[user_df.user_name == prof['uniqueId'], 'hashtags'].tolist()[0]
                     if 'textExtra' in video:
@@ -128,7 +126,6 @@ def tiktok(only_unverified=True,
     user_df['basic_stats'] = stats
     user_df['hashtags'] = hashs
 
-
     name_file = str(hashtag_start).replace(' ', '_') + '_music_by_hashtag.csv'
     user_df.to_csv(name_file, index=False)
 
@@ -138,16 +135,16 @@ def tiktok(only_unverified=True,
 if __name__ == '__main__':
 
     # choose inputs
-    print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut (valeur indiquée entre parenthèses)")
+    print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut (valeur entre parenthèses)")
     print('\n')
     print('Paramètres initiaux :')
-    depart = str(input("Hashtags avec lequel initialiser *séparer par des espaces* ('synthsolo' par défaut): ") or 'synthsolo')
+    depart = str(input("Hashtags avec lequel initialiser ('synthsolo' par défaut): ") or 'synthsolo')
     o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
     n_t = int(input("Nombre de videos à vouloir être traiter (n_tiktok_max = 1000): ") or 1000)
     m_f = int(input("Nombre de followers max par profil (max_followers = 10000): ") or 10000)
 
     # call function with defined parameters
-    tiktok(only_unverified=o_u,
-           n_tiktok_max=n_t,
-           max_followers=m_f,
-           hashtag_start=depart)
+    tiktok_hashtag(only_unverified=o_u,
+                   n_tiktok_max=n_t,
+                   max_followers=m_f,
+                   hashtag_start=depart)

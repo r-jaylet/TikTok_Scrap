@@ -9,43 +9,23 @@ verifyFp = ''
 
 api = TikTokApi(custom_verifyFp=verifyFp)
 
-# list of key words for filter
-key_hashtag = ['music', 'musician', 'instrumentalist', 'impro',
-               'solo', 'band', 'newmusic', 'musiciansoftiktok',
-               'songwriter', 'rythm', 'cover',
-               'jazztok', 'producer', 'guitarsolo'
-               'jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
-               'groove', 'classical', 'neosoul', 'indiemusic', 'lofi',
-               'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro',
-               'guitar', 'bass', 'piano', 'drums', 'synth', 'rhodes']
 
-style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie',
-         'groove', 'classical', 'neosoul', 'indiemusic',
-         'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
-
-instrument = ['guitar', 'bass', 'piano', 'drums',
-              'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
-
-
-def tiktok(only_unverified=True,
-           only_duo=False,
-           hashtag_filter=True,
-           list_hashtags=key_hashtag,
-           n_user=20,
-           n_vid=30,
-           max_followers=100000,
-           graph_direction=True,
-           seed=None):
+def tiktok_function(only_unverified=True,
+                    only_duo=False,
+                    n_user=10,
+                    n_vid=30,
+                    max_followers=100000,
+                    graph_direction=True,
+                    seed=None):
     """
     Creates a dataframe of musicians' profile on TikTok.
             Parameters:
                 only_unverified (bool): if 'True', only select unverified profiles
                 only_duo (bool): if 'True', only select duet connections
-                hashtag_filter (bool): if 'True', only select musicians with selected hashtags
-                list_hashtags (list of str) : list of hashtags to filter musicians
                 n_user (int): number of artists wanted in the database
                 n_vid (int): number of TikToks scrapped in each profile
                 max_followers (int): maximum number of followers
+                graph_direction (bool): if 'True', select 'in' collabs, else select 'out' collabs
                 seed (list of str): list of users to initiate reccursive algorithm
             Returns:
                 user_db (csv): datebase of users with its different characteristics
@@ -67,6 +47,14 @@ def tiktok(only_unverified=True,
 
     # list of key words for duos
     duo_list = ['duo', 'duet', 'duetme', 'duetwithme', 'duetthis', 'duets', 'duos']
+
+    # list of key words for filters
+    style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie', 'groove', 'classical', 'neosoul',
+             'indiemusic', 'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
+    instrument = ['guitar', 'bass', 'piano', 'drums', 'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
+    key_hashtag = ['music', 'musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic', 'musiciansoftiktok',
+                   'songwriter', 'rythm', 'cover', 'jazztok', 'producer', 'guitarsolo']
+    list_hashtags = key_hashtag + style + instrument
 
     # initialize csv doc
     name_file = users[0] + '_' + str(n_user) + '_music.csv'
@@ -90,6 +78,7 @@ def tiktok(only_unverified=True,
 
             if profile:  # check empty profile
 
+                # get basic info
                 res = dict.fromkeys(col_db)
                 prof = profile['user']
                 stat = profile['stats']
@@ -105,14 +94,15 @@ def tiktok(only_unverified=True,
                 else:
                     res['verified'] = prof['verified']
 
-                # get profile info
+                # get unique profile info
                 res['signature'] = prof['signature']
                 res['user_name'] = prof['uniqueId']
 
                 # get stats
                 basic_stats = {}
                 if stat['followerCount'] > max_followers:
-                    print("Le profil n'est pas ajouté car l'utilisateur a trop d'abonnés (" + str(stat['followerCount']) + " abonnés)")
+                    print("Le profil n'est pas ajouté car "
+                          "l'utilisateur a trop d'abonnés (" + str(stat['followerCount']) + " abonnés)")
                     continue
                 else:
                     basic_stats['follower_count'] = stat['followerCount']
@@ -127,18 +117,19 @@ def tiktok(only_unverified=True,
                 basic_stats['likes_count'] = stat['heartCount']
                 basic_stats['video_count'] = stat['videoCount']
                 basic_stats['last_active'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
-                date = [datetime.utcfromtimestamp(int(tiktoks[i]['createTime'])).strftime('%Y-%m-%d') for i in range(len(tiktoks))]
+                date = [datetime.utcfromtimestamp(int(tiktoks[t]['createTime'])).strftime('%Y-%m-%d')
+                        for t in range(len(tiktoks))]
                 dates = [datetime.strptime(d, "%Y-%m-%d") for d in date]
-                delta = [abs((dates[i + 1] - dates[i]).days) for i in range(len(dates)-1)]
+                delta = [abs((dates[d + 1] - dates[d]).days) for d in range(len(dates)-1)]
                 freq = int(sum(delta) / len(delta))
                 if freq == 0:
                     freq = 1
                 basic_stats['freq_post'] = str(freq) + ' days'
                 res['basic_stats'] = basic_stats
 
-                # select 'a mentionné ...' link
-                if graph_direction:
-                    # get collab and hashtags
+                if graph_direction:  # select 'a mentionné ...' link
+
+                    # get collabs and hashtags
                     mentions, duos, collab, hashtag = [], [], [], []
                     collab_url = {}
                     all_hashtags = []
@@ -147,11 +138,13 @@ def tiktok(only_unverified=True,
                             tiktok_id = tiktok['id']
                             if 'textExtra' in tiktok:  # get special text
                                 if only_duo:
-                                    hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
+                                    hashtag_cand = list(filter(None, [text['hashtagName']
+                                                                      for text in tiktok['textExtra']]))
                                     if not (any([any(m in w for w in hashtag_cand) for m in duo_list])):
                                         continue
                                     else:
-                                        collab_cand = list(filter(None, [text['userUniqueId'] for text in tiktok['textExtra']]))
+                                        collab_cand = list(filter(None, [text['userUniqueId']
+                                                                         for text in tiktok['textExtra']]))
                                         for collab_c in collab_cand:
                                             if collab_c not in collab:
                                                 collab.append(collab_c)  # add collaborative artist
@@ -159,10 +152,10 @@ def tiktok(only_unverified=True,
                                                     'https://tiktok.com/@' + user + '/video/' + tiktok_id)
                                                 if any([any(m in w for w in hashtag_cand) for m in duo_list]):
                                                     duos.append(collab_c)
-                                                    collab_url[collab_c] += ' (duo, vidéo num: '+ str(tik_num) + ')'
+                                                    collab_url[collab_c] += ' (duo, vidéo num:' + str(tik_num) + ')'
                                                 else:
                                                     mentions.append(collab_c)
-                                                    collab_url[collab_c] += ' (mention, vidéo num: ' + str(tik_num) + ')'
+                                                    collab_url[collab_c] += ' (mention, vidéo num:' + str(tik_num) + ')'
 
                                         all_hashtags += hashtag_cand
 
@@ -170,8 +163,10 @@ def tiktok(only_unverified=True,
                                             if hashtag_c not in hashtag:
                                                 hashtag.append(hashtag_c)  # add hashtag used
                                 else:
-                                    hashtag_cand = list(filter(None, [text['hashtagName'] for text in tiktok['textExtra']]))
-                                    collab_cand = list(filter(None, [text['userUniqueId'] for text in tiktok['textExtra']]))
+                                    hashtag_cand = list(filter(None, [text['hashtagName']
+                                                                      for text in tiktok['textExtra']]))
+                                    collab_cand = list(filter(None, [text['userUniqueId']
+                                                                     for text in tiktok['textExtra']]))
                                     for collab_c in collab_cand:
                                         if collab_c not in collab:
                                             collab.append(collab_c)  # add collaborative artist
@@ -190,8 +185,8 @@ def tiktok(only_unverified=True,
                                         if hashtag_c not in hashtag:
                                             hashtag.append(hashtag_c)  # add hashtag used
 
-                # select 'mentionné par ...' link
-                else:
+                else:  # select 'mentionné par ...' link
+
                     # get hashtags
                     hashtag = []
                     all_hashtags = []
@@ -207,7 +202,7 @@ def tiktok(only_unverified=True,
                                         hashtag.append(hashtag_c)  # add hashtag used
 
                     # get collabs
-                    mentions, duos, collab =[], [], []
+                    mentions, duos, collab = [], [], []
                     tiktok_out = api.search.videos(user)
 
                     for video in tiktok_out:
@@ -218,7 +213,8 @@ def tiktok(only_unverified=True,
                             collab_c = str(tik_out['author']['uniqueId'])
                             if 'textExtra' in tik_out:  # get special text
                                 if only_duo:
-                                    hashtag_cand = list(filter(None, [text['hashtagName'] for text in tik_out['textExtra']]))
+                                    hashtag_cand = list(filter(None, [text['hashtagName']
+                                                                      for text in tik_out['textExtra']]))
                                     if not (any([any(m in w for w in hashtag_cand) for m in duo_list])):
                                         continue
                                     else:
@@ -253,13 +249,12 @@ def tiktok(only_unverified=True,
                         styl_count[hashtag_c] += 1
 
                 # musician filter
-                if hashtag_filter:
-                    if not (any([any(m in w for w in list_hashtags) for m in hashtag])):
-                        print("Le profil n'est pas ajouté car il n'est pas considéré comme un musicien")
-                        continue
+                if not (any([any(m in w for w in list_hashtags) for m in hashtag])):
+                    print("Le profil n'est pas ajouté car il n'est pas considéré comme un musicien")
+                    continue
 
                 # hashtags by category
-                inst, styl, hash = [], [], []
+                inst, styl, has = [], [], []
                 for i in instrument:
                     if inst_count[i] != 0:
                         inst_num = str(i) + ' (' + str(inst_count[i]) + ')'
@@ -270,7 +265,7 @@ def tiktok(only_unverified=True,
                         styl.append(styl_num)
                 for h in hashtag[:20]:
                     if (h not in styl) and (h not in inst):
-                        hash.append(h)
+                        has.append(h)
 
                 hashtag_cat = {}
                 hashtag_cat['instruments'] = inst
@@ -291,9 +286,9 @@ def tiktok(only_unverified=True,
                 for c in collab_url.keys():
                     print(c, ':', collab_url[c])
 
-            for cand in collab:
-                if cand not in users:
-                    users.append(cand)
+            for cand_collab in collab:
+                if cand_collab not in users:
+                    users.append(cand_collab)
 
             if i_user >= n_user:
                 print("\n")
@@ -318,7 +313,7 @@ def tiktok(only_unverified=True,
 if __name__ == '__main__':
 
     # choose inputs
-    print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut (valeur indiquée entre parenthèses)")
+    print("Pour chaque étape, appuyez sur 'enter' pour valider les valeurs par défaut (valeur entre parenthèses)")
     print('\n')
     print('Paramètres initiaux :')
     depart = int(input("Nombre d'utilisateurs avec lequel initialiser (start = 1): ") or 1)
@@ -332,16 +327,17 @@ if __name__ == '__main__':
     m_f = int(input("Nombre de followers max par profil (max_followers = 100000): ") or 100000)
     o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
-    g_d = bool(input("Direction de recherche - 'à mentionné ...' -> True / 'mentionné par ...' -> False (graph_direction=True): ") or True)
+    g_d = bool(input("Direction de recherche - 'à mentionné ...' -> True /"
+                     " 'mentionné par ...' -> False (graph_direction=True): ") or True)
 
     # call function with defined parameters
-    tiktok(n_user=arret,
-           seed=ini_list,
-           n_vid=n_v,
-           max_followers=m_f,
-           only_unverified=o_u,
-           only_duo=o_d,
-           graph_direction=g_d)
+    tiktok_function(n_user=arret,
+                    seed=ini_list,
+                    n_vid=n_v,
+                    max_followers=m_f,
+                    only_unverified=o_u,
+                    only_duo=o_d,
+                    graph_direction=g_d)
 
     # pruning : keep only musicians in output database
     name_file = str(ini_list[0]) + '_' + str(arret) + '_music.csv'
@@ -365,12 +361,12 @@ if __name__ == '__main__':
         stat_to_str = ''
         hash_to_str = ''
         stat = ast.literal_eval(data.basic_stats[i])
-        hash = ast.literal_eval(data.hashtags[i])
+        has = ast.literal_eval(data.hashtags[i])
         for j in range(len(stat)):
             stat_to_str += str(list(stat.keys())[j]) + ' : ' + str(list(stat.values())[j]) + '\n'
         stats.append(stat_to_str)
-        for j in range(len(hash)):
-            hash_to_str += str(list(hash.keys())[j]) + ' : ' + ', '.join(str(x) for x in list(hash.values())[j])  + '\n'
+        for j in range(len(has)):
+            hash_to_str += str(list(has.keys())[j]) + ' : ' + ', '.join(str(x) for x in list(has.values())[j]) + '\n'
         hashs.append(hash_to_str)
     data['basic_stats'] = stats
     data['hashtags'] = hashs
