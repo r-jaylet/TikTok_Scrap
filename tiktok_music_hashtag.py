@@ -3,9 +3,11 @@ from timeit import default_timer as timer
 from datetime import datetime
 import pandas as pd
 
-verifyFp = ''
-
-api = TikTokApi(custom_verify_fp=verifyFp)
+#verifyFp = ''
+#api = TikTokApi(custom_verify_fp=verifyFp)
+#ms_token = "VgsxC2tZxqdQyDO6969jXRphOBdIfBNoGLvIfUmMBt5TZLCmpx5RJyaeCrONHMjeP1bWVXuSkdOqxGBFVCYoq39J5QHrCN8QG5r9_dB3xFHAaLk4fCaRLs-XMkRuFcFORz5AFLloXNw="
+#api = TikTokApi(ms_token=ms_token)
+api = TikTokApi()
 
 
 def tiktok_hashtag(only_unverified=True,
@@ -36,7 +38,7 @@ def tiktok_hashtag(only_unverified=True,
 
     start = timer()
     tag = api.hashtag(name=hashtag_start)
-    tiktoks = [video.as_dict for video in tag.videos(count=n_tiktok_max)]
+    tiktoks = [video.as_dict for video in tag.videos(get_all=True)]  # count=n_tiktok_max
 
     end = timer()
     print("Temps d'exécution de la recherche pour", hashtag_start, ":", round(end - start, 1), 's')

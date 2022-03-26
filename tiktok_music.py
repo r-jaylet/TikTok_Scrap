@@ -4,11 +4,20 @@ import csv
 from datetime import datetime
 import ast
 import pandas as pd
+import time
 
-verifyFp = ''
+# list of key words for filters
+style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie', 'groove', 'classical', 'neosoul',
+         'indiemusic', 'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
+instrument = ['guitar', 'bass', 'piano', 'drums', 'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
+key_hashtag = ['music', 'musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic', 'musiciansoftiktok',
+               'songwriter', 'rythm', 'cover', 'jazztok', 'producer', 'guitarsolo']
 
-api = TikTokApi(custom_verifyFp=verifyFp)
-
+#verifyFp = ''
+#api = TikTokApi(custom_verify_fp=verifyFp)
+#ms_token = "VgsxC2tZxqdQyDO6969jXRphOBdIfBNoGLvIfUmMBt5TZLCmpx5RJyaeCrONHMjeP1bWVXuSkdOqxGBFVCYoq39J5QHrCN8QG5r9_dB3xFHAaLk4fCaRLs-XMkRuFcFORz5AFLloXNw="
+#api = TikTokApi(ms_token=ms_token)
+api = TikTokApi()
 
 def tiktok_function(only_unverified=True,
                     only_duo=False,
@@ -48,12 +57,6 @@ def tiktok_function(only_unverified=True,
     # list of key words for duos
     duo_list = ['duo', 'duet', 'duetme', 'duetwithme', 'duetthis', 'duets', 'duos']
 
-    # list of key words for filters
-    style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie', 'groove', 'classical', 'neosoul',
-             'indiemusic', 'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
-    instrument = ['guitar', 'bass', 'piano', 'drums', 'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
-    key_hashtag = ['music', 'musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic', 'musiciansoftiktok',
-                   'songwriter', 'rythm', 'cover', 'jazztok', 'producer', 'guitarsolo']
     list_hashtags = key_hashtag + style + instrument
 
     # initialize csv doc
@@ -72,6 +75,7 @@ def tiktok_function(only_unverified=True,
         try:
             start = timer()
             user_profile = api.user(username=user)
+            time.sleep(1)
             profile = user_profile.info_full()
             end = timer()
             print("Temps recherche du profil:", round(end - start, 1), 's')
@@ -270,7 +274,7 @@ def tiktok_function(only_unverified=True,
                 hashtag_cat = {}
                 hashtag_cat['instruments'] = inst
                 hashtag_cat['styles'] = styl
-                hashtag_cat['others'] = hash
+                hashtag_cat['others'] = has
 
                 # complete profile info
                 res['hashtags'] = hashtag_cat
