@@ -2,9 +2,7 @@ from TikTokApi import TikTokApi
 
 api = TikTokApi()
 
-tag = api.hashtag(name="funny")
+user_profile = api.user(username='haelstoot')
+profile = user_profile.info_full()
 
-print(tag.info())
-
-for video in tag.videos():
-    print(video.id)
+print(profile)

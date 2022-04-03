@@ -10,20 +10,19 @@ import time
 style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie', 'groove', 'classical', 'neosoul',
          'indiemusic', 'blues', 'punk', 'folk', 'gospel', 'dubstep', 'house', 'electro']
 instrument = ['guitar', 'bass', 'piano', 'drums', 'tuba', 'chords', 'saxophone', 'violin', 'flute', 'cello']
-key_hashtag = ['music', 'musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic', 'musiciansoftiktok',
+key_hashtag = ['musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic', 'musiciansoftiktok',
                'songwriter', 'rythm', 'cover', 'jazztok', 'producer', 'guitarsolo']
 
 #verifyFp = ''
 #api = TikTokApi(custom_verify_fp=verifyFp)
 #ms_token = "VgsxC2tZxqdQyDO6969jXRphOBdIfBNoGLvIfUmMBt5TZLCmpx5RJyaeCrONHMjeP1bWVXuSkdOqxGBFVCYoq39J5QHrCN8QG5r9_dB3xFHAaLk4fCaRLs-XMkRuFcFORz5AFLloXNw="
 #api = TikTokApi(ms_token=ms_token)
-api = TikTokApi()
 
 def tiktok_function(only_unverified=True,
                     only_duo=False,
                     n_user=10,
                     n_vid=30,
-                    max_followers=100000,
+                    max_followers=50000,
                     graph_direction=True,
                     seed=None):
     """
@@ -52,6 +51,7 @@ def tiktok_function(only_unverified=True,
     i_user = 0
 
     # users = seed
+    api = TikTokApi()
     users = [api.user(username=s).username for s in seed]
 
     # list of key words for duos
@@ -72,15 +72,18 @@ def tiktok_function(only_unverified=True,
         print('\n')
         print('iteration #', iter, ':', user)
 
+        if iter%100 == 0:
+            time.sleep(20)
+            print('pause de 20 sec...')
+            api = TikTokApi()
         try:
             start = timer()
             user_profile = api.user(username=user)
-            time.sleep(1)
             profile = user_profile.info_full()
             end = timer()
             print("Temps recherche du profil:", round(end - start, 1), 's')
 
-            if profile:  # check empty profile
+            if (profile['stats']['videoCount'] >= 2) & (profile['user']['privateAccount'] == False):  # check empty & private profiles
 
                 # get basic info
                 res = dict.fromkeys(col_db)
@@ -125,7 +128,10 @@ def tiktok_function(only_unverified=True,
                         for t in range(len(tiktoks))]
                 dates = [datetime.strptime(d, "%Y-%m-%d") for d in date]
                 delta = [abs((dates[d + 1] - dates[d]).days) for d in range(len(dates)-1)]
-                freq = int(sum(delta) / len(delta))
+                if len(delta):
+                    freq = int(sum(delta) / len(delta))
+                else:
+                    freq = 1
                 if freq == 0:
                     freq = 1
                 basic_stats['freq_post'] = str(freq) + ' days'
@@ -253,7 +259,7 @@ def tiktok_function(only_unverified=True,
                         styl_count[hashtag_c] += 1
 
                 # musician filter
-                if not (any([any(m in w for w in list_hashtags) for m in hashtag])):
+                if sum([any(m in w for w in list_hashtags) for m in hashtag]) < 3:
                     print("Le profil n'est pas ajouté car il n'est pas considéré comme un musicien")
                     continue
 
@@ -289,6 +295,8 @@ def tiktok_function(only_unverified=True,
                 print('Liste des utilisateurs mentionnés de', user, ':')
                 for c in collab_url.keys():
                     print(c, ':', collab_url[c])
+            else:
+                print("Le profil n'est pas ajouté car il n'y a pas assez de vidéos ou reglé en privé")
 
             for cand_collab in collab:
                 if cand_collab not in users:
@@ -300,14 +308,23 @@ def tiktok_function(only_unverified=True,
                 file.close()
                 return
 
+        except KeyError as e:
+            print("Erreur avec l'utilisateur :", user)
+            print("KeyError :" + str(e))
+
+        except AttributeError as e:
+            print("Erreur avec l'utilisateur :", user)
+            print("AttributeError :" + str(e))
+
         except KeyboardInterrupt:
             file.close()
             print('KeyboardInterrupt : interruption prématurée')
             return
 
+        '''
         except:
-            print("\n")
             print("Erreur avec l'utilisateur :", user)
+        '''
 
     file.close()
     print("il n'y a plus d'utilisateurs sur lesquels itérer")
@@ -328,7 +345,7 @@ if __name__ == '__main__':
         ini_list.append(us)
     arret = int(input("Nombre d'utilisateurs avec lequel terminer l'algortihme (n_user = 10): ") or 10)
     n_v = int(input("Nombre de TikToks max étudiés par profil (n_vid = 30): ") or 30)
-    m_f = int(input("Nombre de followers max par profil (max_followers = 100000): ") or 100000)
+    m_f = int(input("Nombre de followers max par profil (max_followers = 50000): ") or 50000)
     o_u = bool(input("Conserver uniquement les profils pas vérifiés ? (only_unverified=True): ") or True)
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
     g_d = bool(input("Direction de recherche - 'à mentionné ...' -> True /"
