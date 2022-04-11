@@ -5,6 +5,8 @@ from datetime import datetime
 import ast
 import pandas as pd
 import time
+import requests
+from bs4 import BeautifulSoup
 
 # list of key words for filters
 style = ['jazz', 'funk', 'rock', 'pop', 'rap', 'metal', 'rnb', 'hiphop', 'indie', 'groove', 'classical', 'neosoul',
@@ -15,8 +17,8 @@ key_hashtag = ['musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic
 
 #verifyFp = ''
 #api = TikTokApi(custom_verify_fp=verifyFp)
-#ms_token = "VgsxC2tZxqdQyDO6969jXRphOBdIfBNoGLvIfUmMBt5TZLCmpx5RJyaeCrONHMjeP1bWVXuSkdOqxGBFVCYoq39J5QHrCN8QG5r9_dB3xFHAaLk4fCaRLs-XMkRuFcFORz5AFLloXNw="
-#api = TikTokApi(ms_token=ms_token)
+ms_token = "cr7d4I0GjY6Ik1iZI4ryG_0b7LXIB6RCDiwsc7BbdkL69nP6dgxoUbhE38gMpJdjJAJa51dmoJQ4y3V-EZoLQz1xQ920Iw_rfCXnQv_yIeJYibweoYgliq7JiiZvvtIvVNpIPGmaukU="
+api = TikTokApi(ms_token=ms_token)
 
 def tiktok_function(only_unverified=True,
                     only_duo=False,
@@ -49,6 +51,7 @@ def tiktok_function(only_unverified=True,
     # initialize control variables
     iter = 0
     i_user = 0
+    counter = 0
 
     # users = seed
     api = TikTokApi()
@@ -72,10 +75,18 @@ def tiktok_function(only_unverified=True,
         print('\n')
         print('iteration #', iter, ':', user)
 
-        if iter%100 == 0:
-            time.sleep(20)
-            print('pause de 20 sec...')
-            api = TikTokApi()
+        # when number of iterations is getting large, we start rotating IPs
+        if iter > 800 and len(proxylist) > 2:
+            if iter % 100 == 0:
+                print('Pause de 10 sec...')
+                time.sleep(10)
+                if counter > len(proxylist):
+                    counter = 0
+                else:
+                    counter += 1
+                print('Change de proxy : ', proxylist[counter])
+                api = TikTokApi(ms_token=ms_token, proxy=proxylist[counter])
+
         try:
             start = timer()
             user_profile = api.user(username=user)
@@ -321,10 +332,11 @@ def tiktok_function(only_unverified=True,
             print('KeyboardInterrupt : interruption prématurée')
             return
 
-        '''
-        except:
+        except Exception as e:
             print("Erreur avec l'utilisateur :", user)
-        '''
+            print("Exception :" + str(e))
+            api = TikTokApi(ms_token=ms_token)
+
 
     file.close()
     print("il n'y a plus d'utilisateurs sur lesquels itérer")
@@ -350,6 +362,31 @@ if __name__ == '__main__':
     o_d = bool(input("Conserver uniquement les relations via duo ? (only_duo=False): ") or False)
     g_d = bool(input("Direction de recherche - 'à mentionné ...' -> True /"
                      " 'mentionné par ...' -> False (graph_direction=True): ") or True)
+
+
+    if  4 * arret > 1000:
+
+        # Get proxies list
+        def getProxies():
+            proxies = ['']
+            try:
+                r = requests.get('https://free-proxy-list.net/')
+                soup = BeautifulSoup(r.content, 'html.parser')
+                table = soup.find('tbody')
+                for row in table:
+                    if row.find_all('td')[3].text == 'France' and row.find_all('td')[4].text == 'elite proxy':
+                        proxy = ':'.join([row.find_all('td')[0].text, row.find_all('td')[1].text])
+                        proxy = 'https://' + proxy
+                        proxies.append(proxy)
+                    else:
+                        pass
+            except:
+                print('Erreur lors de la recupération des proxies')
+            return proxies
+
+
+    proxylist = getProxies()
+    # print(proxylist)
 
     # call function with defined parameters
     tiktok_function(n_user=arret,

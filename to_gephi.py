@@ -10,7 +10,10 @@ def convert_to_adjacency(data):
         user_collabs = str(data.music_collabs[i]).split("\n")
         user_collabs.pop()
         username_collabs = [u.split(" ")[0] for u in user_collabs]
-        cand_list = [int(data[data['user_name'] == u].index.values) for u in username_collabs]
+        cand_list = []
+        for u in username_collabs:
+            if u in list(data['user_name']):
+                cand_list.append(int(data[data['user_name'] == u].index.values))
         adj_list.append(cand_list)
     return adj_list
 
