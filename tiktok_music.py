@@ -17,7 +17,8 @@ key_hashtag = ['musician', 'instrumentalist', 'impro', 'solo', 'band', 'newmusic
 
 #verifyFp = ''
 #api = TikTokApi(custom_verify_fp=verifyFp)
-ms_token = "cr7d4I0GjY6Ik1iZI4ryG_0b7LXIB6RCDiwsc7BbdkL69nP6dgxoUbhE38gMpJdjJAJa51dmoJQ4y3V-EZoLQz1xQ920Iw_rfCXnQv_yIeJYibweoYgliq7JiiZvvtIvVNpIPGmaukU="
+ms_token = "-lpuhy80fuh8DH_qmVeTdbUV2wuRuZ8oIBjGrVWARv_axcUzPrYPbaoQAodWd1stxtDHvzE6crh0MlLY27wXkMRIAEf5NO22__sJIOOqda4bpUSl2vlAZ1vizf195Tegjl8iAy0fYRg="
+
 api = TikTokApi(ms_token=ms_token)
 
 def tiktok_function(only_unverified=True,
@@ -100,7 +101,6 @@ def tiktok_function(only_unverified=True,
                 res = dict.fromkeys(col_db)
                 prof = profile['user']
                 stat = profile['stats']
-                time_stamp = int(profile['user']['createTime'])
 
                 # check filters
                 if only_unverified:
@@ -134,6 +134,7 @@ def tiktok_function(only_unverified=True,
                 basic_stats['following_count'] = stat['followingCount']
                 basic_stats['likes_count'] = stat['heartCount']
                 basic_stats['video_count'] = stat['videoCount']
+                time_stamp = int(tiktoks[0]['createTime'])
                 basic_stats['last_active'] = datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d')
                 date = [datetime.utcfromtimestamp(int(tiktoks[t]['createTime'])).strftime('%Y-%m-%d')
                         for t in range(len(tiktoks))]
@@ -270,7 +271,7 @@ def tiktok_function(only_unverified=True,
                         styl_count[hashtag_c] += 1
 
                 # musician filter
-                if sum([any(m in w for w in list_hashtags) for m in hashtag]) < 3:
+                if sum([any(m in w for w in list_hashtags) for m in hashtag]) < 2:
                     print("Le profil n'est pas ajouté car il n'est pas considéré comme un musicien")
                     continue
 
@@ -385,8 +386,8 @@ if __name__ == '__main__':
             return proxies
 
 
-    proxylist = getProxies()
-    # print(proxylist)
+        proxylist = getProxies()
+        # print(proxylist)
 
     # call function with defined parameters
     tiktok_function(n_user=arret,
